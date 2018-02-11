@@ -91,6 +91,7 @@ Also remove the labels.
 
 ```
 $ kubectl delete pod dp-client
+$ kubectl delete pod dp-server
 for i in {1..6}; do
   kubectl label node testnode-1 dennis-
 done
