@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dp-client
+spec:
+  hostname: dp-client
+  containers:
+  - image: centos/python-35-centos7
+    imagePullPolicy: Always
+    name: dp-client
+    command: [ "sleep", "999999" ]
