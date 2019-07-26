@@ -188,6 +188,54 @@ given to the dp-server container.
 /home # curl http://dp-srv1:8888
 ```
 
+## Testing using iperf
+
+Sometimes it's nice to launch a pod on two different k8s nodes and run iperf between them for the
+purpose of testing things like network plugins (e.g. Calico).  I realize you can run ping as a network
+connectivity test but ping packets have a big spacing between them and if there was a quick network
+outage, you would not notice.
+
+If you run an iperf between two pods that reside on two different k8s nodes (using low bandwidth),
+connectivity should be ok and iperf should not see any packet loss -- you can see this on the iperf
+output.
+
+The calico test is this:
+
+* run iperf between two pods on two different k8s nodes
+* upgrade calico (you will see the calico pods restart in a rolling fashion)
+* iperf should show no packet loss
+
+Repeat that test using different combinations of k8s node pairs.  The more iperfs you have running,
+the better -- i.e. ideally, run iperf full mesh between all k8s node pairs and upgrade calico.
+If things work out, you will see no packet loss.  If this is true, you know it's safe to upgrade
+calico.
+
+NOTE: when you upgrade calico, there is a time where the calico daemonset must download the new version.
+This takes some time and contributes to the amount of time the upgrade takes.  When you run the test
+repeatedly, this download time goes away because the image version may have already been downloaded.
+To keep the tests consistent, before running any test, goto each k8s host and do `sudo docker rmi ...`
+using all versions of calico except for the current one being used.  In fact docker won't let you
+delete the one being used.
+
+Sample iperf commands to run on a shell in the pod via `kubectl exec -ti (podName) -- sh`:
+
+Run this on the iperf client pod:
+
+```
+# Use iperf server, UDP traffic, report interval of 1 second.
+# In this example the pod IP=10.239.73.91
+iperf -sui 1
+```
+
+Run this on the iperf server pod:
+
+```
+# Use iperf client, 5 parallel streams of data, UDP traffic, report interval of 1 second,
+# iterate for 1000 times.
+#
+iperf -P 5 -udi1 -c 10.239.73.91 -t 1000
+```
+
 ## Conclusion
 
 Using a tool container equipped with all the tools needed to do debugging can be very useful when you

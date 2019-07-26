@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dp-iperf1
+spec:
+  nodeSelector:
+    dennis: "4"
+  hostname: dp-iperf1
+  containers:
+  - image: mlabbe/iperf
+    imagePullPolicy: Always
+    name: dp-iperf1
+    command: [ "sleep", "999999" ]
